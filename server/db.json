@@ -1,13 +1,12 @@
 {
-    "posts": [
-      { "id": "1", "title": "a title", "views": 100 },
-      { "id": "2", "title": "another title", "views": 200 }
-    ],
-    "comments": [
-      { "id": "1", "text": "a comment about post 1", "postId": "1" },
-      { "id": "2", "text": "another comment about post 1", "postId": "1" }
-    ],
-    "profile": {
-      "name": "typicode"
-    }
-  }
+    "recipes": [
+      {
+        "id": "123456",
+        "title": "Big Mac",
+        "description": "Big Mac with special sauce",
+        "prepTime": 20,
+        "ingredients": ["bread","meat","lettuce","onion","mustard"],
+        "image": "https://s7d1.scene7.com/is/image/mcdonalds/DC_202302_0005-999_BigMac_1564x1564-1:product-header-mobile?wid=1313&hei=1313&dpr=off"
+      }
+    ]
+}
