@@ -9,9 +9,11 @@ import {
   Typography,
   Box,
 } from "@mui/material";
-import React, { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
+import axiosInstance from "../axios-instance";
+import React, { useState, useEffect } from "react";
 
-const CreateRecipe = ({ open, handleClose }) => {
+const CreateRecipe = ({ open, handleClose, recipeToEdit, isEditMode }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [prepTime, setPrepTime] = useState("");
@@ -22,6 +24,16 @@ const CreateRecipe = ({ open, handleClose }) => {
   const textFieldStyle = {
     margin: "10px",
   };
+
+  useEffect(() => {
+    if (isEditMode) {
+      setTitle(recipeToEdit?.title);
+      setDescription(recipeToEdit?.description);
+      setImage(recipeToEdit?.image);
+      setPrepTime(recipeToEdit?.prepTime);
+      setIngredients(recipeToEdit?.ingredients);
+    }
+  }, [isEditMode]);
 
   const convertImageToBase64 = (files) => {
     const fileReader = new FileReader();
@@ -50,22 +62,70 @@ const CreateRecipe = ({ open, handleClose }) => {
     setIngredients(ingredientCopy);
   };
 
+  const removeIngredient = (position) => {
+    const ingredientCopy = [...ingredients];
+
+    const filteredIngredients = ingredientCopy.filter(
+      (item, index) => index !== position
+    );
+
+    setIngredients(filteredIngredients);
+  };
+
+  const reset = () => {
+    setTitle("");
+    setDescription("");
+    setPrepTime("");
+    setIngredients([""]);
+    setImage("");
+    setFileName("");
+  };
+
+  const createRecipe = async () => {
+    const recipe = {
+      id: uuidv4(),
+      title,
+      description,
+      prepTime: parseInt(prepTime, 10),
+      ingredients,
+      image,
+    };
+
+    const response = await axiosInstance.post("/", recipe);
+
+    if (response.status === 201) {
+      reset();
+
+      handleClose();
+    }
+  };
+
+  const isDisabled =
+    !title ||
+    !description ||
+    !image ||
+    !prepTime ||
+    !ingredients.every((ingredient) => !!ingredient);
+
+  const close = () => {
+    reset();
+    handleClose();
+  };
+
   return (
     <Dialog
       fullWidth
       open={open}
-      onClose={handleClose}
+      onClose={close}
       PaperProps={{
         component: "form",
         onSubmit: (event) => {
           event.preventDefault();
-          const formData = new FormData(event.currentTarget);
-          const formJson = Object.fromEntries(formData.entries());
-          console.log(formJson);
+          createRecipe();
         },
       }}
     >
-      <DialogTitle>Add recipe</DialogTitle>
+      <DialogTitle>{isEditMode ? "Edit" : "Add"} recipe</DialogTitle>
       <DialogContent
         sx={{
           display: "grid",
@@ -116,19 +176,40 @@ const CreateRecipe = ({ open, handleClose }) => {
             }}
           >
             {ingredients.map((ingredient, index) => (
-              <TextField
-                required
-                id="description"
-                name="description"
-                label="Ingredient "
-                variant="outlined"
-                value={ingredient}
-                onChange={(e) => updateIngredient(e.target.value, index)}
-                sx={textFieldStyle}
-              />
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+              >
+                <TextField
+                  required
+                  id={ingredient + index}
+                  name={ingredient + index}
+                  label="Ingredient "
+                  variant="outlined"
+                  value={ingredient}
+                  onChange={(e) => updateIngredient(e.target.value, index)}
+                  sx={{ ...textFieldStyle, width: "80%" }}
+                />
+                <Button
+                  variant="outlined"
+                  color="error"
+                  sx={{
+                    marginRight: "10px",
+                  }}
+                  onClick={() => removeIngredient(index)}
+                  disabled={ingredients.length === 1}
+                >
+                  Delete
+                </Button>
+              </Box>
             ))}
           </Box>
-          <Button variant="outlined" onClick={() => addIngredient()}>
+          <Button
+            sx={{ float: "right", marginRight: "10px" }}
+            variant="outlined"
+            onClick={() => addIngredient()}
+          >
             +Add ingredient
           </Button>
         </Box>
@@ -164,8 +245,8 @@ const CreateRecipe = ({ open, handleClose }) => {
         <Button variant="outlined" onClick={handleClose}>
           Cancel
         </Button>
-        <Button variant="contained" type="submit">
-          Create
+        <Button variant="contained" type="submit" disabled={isDisabled}>
+          {isEditMode ? "Edit" : "Create"}
         </Button>
       </DialogActions>
     </Dialog>

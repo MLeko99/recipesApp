@@ -1,9 +1,22 @@
 import React from "react";
-import { Card, CardMedia, CardContent, Typography } from "@mui/material";
+import {
+  Card,
+  CardMedia,
+  CardContent,
+  Typography,
+  CardActions,
+  Button,
+} from "@mui/material";
 import { useNavigate } from "react-router";
 
-const RecipeCard = ({ recipe }) => {
+const RecipeCard = ({ recipe, setRecipeToEdit }) => {
   const navigate = useNavigate();
+
+  const handleEdit = (e) => {
+    e.stopPropagation();
+    setRecipeToEdit(recipe);
+  };
+
   return (
     <Card onClick={() => navigate(`/details/${recipe.id}`)}>
       <CardMedia
@@ -26,6 +39,11 @@ const RecipeCard = ({ recipe }) => {
           {recipe.title}
         </Typography>
       </CardContent>
+      <CardActions>
+        <Button variant="contained" onClick={handleEdit}>
+          Edit
+        </Button>
+      </CardActions>
     </Card>
   );
 };

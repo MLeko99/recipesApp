@@ -2,11 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Box, Button } from "@mui/material";
 import axiosInstance from "../axios-instance";
 import RecipeCard from "../components/RecipeCard";
-import CreateRecipe from "../components/CreateRecipe";
+import CreateEditRecipe from "../components/CreateEditRecipe";
 
 const RecipeOverview = () => {
   const [recipes, setRecipes] = useState([]);
   const [open, setOpen] = useState(false);
+  const [recipeToEdit, setRecipeToEdit] = useState(null);
+  const [isEditMode, setisEditMode] = useState(false);
 
   const getRecipes = async () => {
     const response = await axiosInstance.get("/");
@@ -17,8 +19,10 @@ const RecipeOverview = () => {
   };
 
   useEffect(() => {
-    getRecipes();
-  }, []);
+    if (!open) {
+      getRecipes();
+    }
+  }, [open]);
 
   return (
     <div>
@@ -27,10 +31,22 @@ const RecipeOverview = () => {
       </Button>
       <Box display="flex" alignItems="flex-start" sx={{ marginTop: "30px" }}>
         {recipes.map((recipe) => (
-          <RecipeCard recipe={recipe} />
+          <RecipeCard
+            recipe={recipe}
+            setRecipeToEdit={(recipe) => {
+              setRecipeToEdit(recipe);
+              setisEditMode(true);
+              setOpen(true);
+            }}
+          />
         ))}
       </Box>
-      <CreateRecipe open={open} handleClose={() => setOpen(false)} />
+      <CreateEditRecipe
+        open={open}
+        handleClose={() => setOpen(false)}
+        isEditMode={isEditMode}
+        recipeToEdit={recipeToEdit}
+      />
     </div>
   );
 };
