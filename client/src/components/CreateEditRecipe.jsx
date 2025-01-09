@@ -12,6 +12,9 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import axiosInstance from "../axios-instance";
 import React, { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { createRecipe, editRecipe } from "../redux/recipeSlice";
+import { isFulfilled } from "@reduxjs/toolkit";
 
 const CreateRecipe = ({ open, handleClose, recipeToEdit, isEditMode }) => {
   const [title, setTitle] = useState("");
@@ -20,6 +23,8 @@ const CreateRecipe = ({ open, handleClose, recipeToEdit, isEditMode }) => {
   const [image, setImage] = useState("");
   const [fileName, setFileName] = useState("");
   const [ingredients, setIngredients] = useState([""]);
+
+  const dispatch = useDispatch();
 
   const textFieldStyle = {
     margin: "10px",
@@ -93,20 +98,18 @@ const CreateRecipe = ({ open, handleClose, recipeToEdit, isEditMode }) => {
     if (isEditMode) {
       recipe.id = recipeToEdit.id;
 
-      const response = await axiosInstance.put(`/${recipe.id}`, recipe);
+      const result = await dispatch(editRecipe(recipe));
 
-      console.log(response);
-
-      if (response.status === 200) {
+      if (isFulfilled(result)) {
         reset();
         handleClose();
       }
     } else {
       recipe.id = uuidv4();
 
-      const response = await axiosInstance.post("/", recipe);
+      const result = await dispatch(createRecipe(recipe));
 
-      if (response.status === 201) {
+      if (isFulfilled(result)) {
         reset();
         handleClose();
       }
