@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { createRecipe } from "./recipeSlice";
+import { createRecipe, editRecipe, deleteRecipe } from "./recipeSlice";
 
 const feedbackSlice = createSlice({
   name: "feedback",
