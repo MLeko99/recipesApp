@@ -48,7 +48,7 @@ const RecipeCard = ({ recipe, setRecipeToEdit, onDelete }) => {
           objectFit: "cover",
         }}
       />
-      <CardContent>
+      <CardContent onClick={() => navigate(`/details/${recipe.id}`)}>
         <Typography
           variant="body2"
           color="textSecondary"
