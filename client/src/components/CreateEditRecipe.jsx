@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -5,74 +6,37 @@ import {
   DialogTitle,
   DialogActions,
   Button,
-  InputAdornment,
   Typography,
   Box,
 } from "@mui/material";
 import { v4 as uuidv4 } from "uuid";
-import axiosInstance from "../axios-instance";
-import React, { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { createRecipe, editRecipe } from "../redux/recipeSlice";
 
-const CreateRecipe = ({ open, handleClose, recipeToEdit, isEditMode }) => {
+const CreateEditRecipe = ({ open, handleClose, recipeToEdit, isEditMode }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [prepTime, setPrepTime] = useState("");
+  const [ingredients, setIngredients] = useState([""]);
   const [image, setImage] = useState("");
   const [fileName, setFileName] = useState("");
-  const [ingredients, setIngredients] = useState([""]);
 
-  const textFieldStyle = {
-    margin: "10px",
-  };
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    if (isEditMode) {
-      setTitle(recipeToEdit?.title);
-      setDescription(recipeToEdit?.description);
-      setImage(recipeToEdit?.image);
-      setPrepTime(recipeToEdit?.prepTime);
-      setIngredients(recipeToEdit?.ingredients);
+    if (isEditMode && recipeToEdit) {
+      setTitle(recipeToEdit.title || "");
+      setDescription(recipeToEdit.description || "");
+      setPrepTime(recipeToEdit.prepTime || "");
+      setIngredients(recipeToEdit.ingredients || [""]);
+      setImage(recipeToEdit.image || "");
+      setFileName(recipeToEdit.fileName || "");
+    } else {
+      resetForm();
     }
-  }, [isEditMode]);
+  }, [isEditMode, recipeToEdit]);
 
-  const convertImageToBase64 = (files) => {
-    const fileReader = new FileReader();
-
-    fileReader.onload = (fileLoadedEvent) => {
-      const base64Image = fileLoadedEvent.target.result;
-      setFileName(files[0]?.name);
-      setImage(base64Image);
-    };
-
-    fileReader.readAsDataURL(files[0]);
-  };
-
-  const addIngredient = () => {
-    setIngredients((prevState) => [...prevState, ""]);
-  };
-
-  const updateIngredient = (newValue, position) => {
-    //SHALLOW COPY
-    const ingredientCopy = [...ingredients];
-
-    //UPDATE ON SPECIFIC POSITION(INDEX)
-    ingredientCopy[position] = newValue;
-
-    //UPDATE VALUE
-    setIngredients(ingredientCopy);
-  };
-
-  const removeIngredient = (position) => {
-    const ingredientCopy = [...ingredients];
-
-    const filteredIngredients = ingredientCopy.filter(
-      (item, index) => index !== position
-    );
-
-    setIngredients(filteredIngredients);
-  };
-
-  const reset = () => {
+  const resetForm = () => {
     setTitle("");
     setDescription("");
     setPrepTime("");
@@ -81,176 +45,168 @@ const CreateRecipe = ({ open, handleClose, recipeToEdit, isEditMode }) => {
     setFileName("");
   };
 
-  const createRecipe = async () => {
+  const handleIngredientChange = (value, index) => {
+    setIngredients((prevIngredients) => {
+      const updatedIngredients = [...prevIngredients];
+      updatedIngredients[index] = value; // Update only the specific ingredient
+      return updatedIngredients;
+    });
+  };
+
+  const handleAddIngredient = () => {
+    setIngredients((prevIngredients) => [...prevIngredients, ""]);
+  };
+
+  const handleRemoveIngredient = (index) => {
+    setIngredients((prevIngredients) =>
+      prevIngredients.filter((_, i) => i !== index)
+    );
+  };
+
+  const handleImageUpload = (files) => {
+    const fileReader = new FileReader();
+
+    fileReader.onload = (fileLoadedEvent) => {
+      setImage(fileLoadedEvent.target.result);
+      setFileName(files[0]?.name || "");
+    };
+
+    if (files[0]) {
+      fileReader.readAsDataURL(files[0]);
+    }
+  };
+
+  const handleSave = async () => {
     const recipe = {
-      id: uuidv4(),
+      id: isEditMode ? recipeToEdit.id : uuidv4(),
       title,
       description,
-      prepTime: parseInt(prepTime, 10),
+      prepTime: Number(prepTime),
       ingredients,
       image,
     };
 
-    const response = await axiosInstance.post("/", recipe);
-
-    if (response.status === 201) {
-      reset();
-
-      handleClose();
+    if (isEditMode) {
+      await dispatch(editRecipe(recipe)); // Save changes to the recipe
+    } else {
+      await dispatch(createRecipe(recipe)); // Add a new recipe
     }
-  };
 
-  const isDisabled =
-    !title ||
-    !description ||
-    !image ||
-    !prepTime ||
-    !ingredients.every((ingredient) => !!ingredient);
-
-  const close = () => {
-    reset();
-    handleClose();
+    handleClose(); // Close the dialog only after successful save
+    resetForm(); // Reset the form after saving
   };
 
   return (
     <Dialog
-      fullWidth
       open={open}
-      onClose={close}
+      onClose={handleClose}
+      fullWidth
       PaperProps={{
         component: "form",
-        onSubmit: (event) => {
-          event.preventDefault();
-          createRecipe();
+        onSubmit: (e) => {
+          e.preventDefault(); // Prevent form from reloading the page
+          handleSave(); // Call save function on form submit
         },
       }}
     >
-      <DialogTitle>{isEditMode ? "Edit" : "Add"} recipe</DialogTitle>
-      <DialogContent
-        sx={{
-          display: "grid",
-          gap: "20px",
-        }}
-      >
+      <DialogTitle>{isEditMode ? "Edit Recipe" : "Add Recipe"}</DialogTitle>
+      <DialogContent>
         <TextField
-          required
-          id="title"
-          name="title"
-          label="Recipe name"
-          variant="outlined"
+          label="Title"
+          fullWidth
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          sx={textFieldStyle}
+          onChange={(e) => setTitle(e.target.value)} // Properly update state
+          margin="normal"
         />
         <TextField
-          required
-          id="description"
-          name="description"
-          label="Recipe description"
-          variant="outlined"
+          label="Description"
+          fullWidth
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          sx={textFieldStyle}
+          onChange={(e) => setDescription(e.target.value)} // Properly update state
+          margin="normal"
         />
         <TextField
-          required
-          id="prepTime"
-          name="prepTime"
-          label="Preparation time"
-          variant="outlined"
-          type="number"
+          label="Preparation Time (minutes)"
+          fullWidth
           value={prepTime}
-          onChange={(e) => setPrepTime(e.target.value)}
-          sx={textFieldStyle}
-          slotProps={{
-            input: {
-              endAdornment: <InputAdornment position="end">min</InputAdornment>,
-            },
-          }}
+          onChange={(e) => setPrepTime(e.target.value)} // Properly update state
+          margin="normal"
+          type="number"
         />
-        <Box>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            {ingredients.map((ingredient, index) => (
-              <Box
-                display="flex"
-                alignItems="center"
-                justifyContent="space-between"
+        <div>
+          {ingredients.map((ingredient, index) => (
+            <div key={index} style={{ display: "flex", marginBottom: "10px" }}>
+              <TextField
+                label={`Ingredient ${index + 1}`}
+                fullWidth
+                value={ingredient}
+                onChange={(e) => handleIngredientChange(e.target.value, index)} // Update specific ingredient
+              />
+              <Button
+                onClick={() => handleRemoveIngredient(index)}
+                color="error"
+                sx={{ marginLeft: "10px" }}
               >
-                <TextField
-                  required
-                  id={ingredient + index}
-                  name={ingredient + index}
-                  label="Ingredient "
-                  variant="outlined"
-                  value={ingredient}
-                  onChange={(e) => updateIngredient(e.target.value, index)}
-                  sx={{ ...textFieldStyle, width: "80%" }}
-                />
-                <Button
-                  variant="outlined"
-                  color="error"
-                  sx={{
-                    marginRight: "10px",
-                  }}
-                  onClick={() => removeIngredient(index)}
-                  disabled={ingredients.length === 1}
-                >
-                  Delete
-                </Button>
-              </Box>
-            ))}
-          </Box>
-          <Button
-            sx={{ float: "right", marginRight: "10px" }}
-            variant="outlined"
-            onClick={() => addIngredient()}
-          >
-            +Add ingredient
+                Remove
+              </Button>
+            </div>
+          ))}
+          <Button onClick={handleAddIngredient} variant="contained">
+            Add Ingredient
           </Button>
-        </Box>
-
+        </div>
         <Box
           sx={{
             display: "flex",
             alignItems: "center",
+            marginTop: "20px",
           }}
         >
           <Button
             component="label"
-            role={undefined}
             variant="contained"
-            tabIndex={-1}
-            sx={{
-              width: "150px",
-              marginRight: "10px",
-              marginLeft: "10px",
-            }}
+            sx={{ marginRight: "10px" }}
           >
-            Upload image
+            Upload Image
             <input
               type="file"
-              onChange={(event) => convertImageToBase64(event.target.files)}
-              style={{ display: "none" }}
+              accept="image/*"
+              hidden
+              onChange={(e) => handleImageUpload(e.target.files)}
             />
           </Button>
-          <Typography>{fileName}</Typography>
+          {fileName && (
+            <Typography variant="body2" sx={{ marginTop: "8px" }}>
+              {fileName}
+            </Typography>
+          )}
         </Box>
+        {image && (
+          <Box
+            component="img"
+            src={image}
+            alt="Uploaded preview"
+            sx={{
+              width: "100%",
+              maxWidth: "200px",
+              marginTop: "10px",
+              borderRadius: "10px",
+            }}
+          />
+        )}
       </DialogContent>
       <DialogActions>
-        <Button variant="outlined" onClick={handleClose}>
-          Cancel
-        </Button>
-        <Button variant="contained" type="submit" disabled={isDisabled}>
-          {isEditMode ? "Edit" : "Create"}
+        <Button onClick={handleClose}>Cancel</Button>
+        <Button
+          type="submit" // Submit the form
+          variant="contained"
+          color="primary"
+        >
+          Save
         </Button>
       </DialogActions>
     </Dialog>
   );
 };
 
-export default CreateRecipe;
+export default CreateEditRecipe;

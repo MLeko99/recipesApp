@@ -3,40 +3,75 @@ import { Box, Button } from "@mui/material";
 import axiosInstance from "../axios-instance";
 import RecipeCard from "../components/RecipeCard";
 import CreateEditRecipe from "../components/CreateEditRecipe";
+import ConfirmDeleteDialog from "../components/ConfirmDeleteDialog";
+import { useDispatch, useSelector } from "react-redux";
+import { setRecipes } from "../redux/recipeSlice";
 
 const RecipeOverview = () => {
-  const [recipes, setRecipes] = useState([]);
   const [open, setOpen] = useState(false);
+  const [isDeleteRecipeModalOpen, setIsDeleteRecipeModalOpen] = useState(false);
+  const [recipeToDelete, setRecipeToDelete] = useState("");
   const [recipeToEdit, setRecipeToEdit] = useState(null);
   const [isEditMode, setisEditMode] = useState(false);
 
+  const dispatch = useDispatch();
+  const recipes = useSelector((state) => state.recipes.recipes);
+
   const getRecipes = async () => {
     const response = await axiosInstance.get("/");
-    console.log(response);
     if (response.status === 200) {
-      setRecipes(response.data);
+      dispatch(setRecipes(response.data));
     }
   };
 
   useEffect(() => {
-    if (!open) {
-      getRecipes();
-    }
-  }, [open]);
+    getRecipes();
+  }, []);
 
   return (
-    <div>
-      <Button variant="contained" onClick={() => setOpen(true)}>
+    <Box
+      sx={{
+        backgroundColor: "#f4f6f9",
+        padding: "20px",
+        boxSizing: "border-box",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "flex-start",
+        paddingBottom: "80px", // Space for footer
+      }}
+    >
+      <Button
+        variant="contained"
+        sx={{
+          backgroundColor: "#3498db",
+          "&:hover": { backgroundColor: "#2980b9" },
+        }}
+        onClick={() => setOpen(true)}
+      >
         + Add recipe
       </Button>
-      <Box display="flex" alignItems="flex-start" sx={{ marginTop: "30px" }}>
-        {recipes.map((recipe) => (
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "20px",
+          justifyContent: "center",
+          marginTop: "20px",
+        }}
+      >
+        {recipes?.map((recipe) => (
           <RecipeCard
+            key={recipe.id}
             recipe={recipe}
             setRecipeToEdit={(recipe) => {
               setRecipeToEdit(recipe);
               setisEditMode(true);
               setOpen(true);
+            }}
+            onDelete={() => {
+              setIsDeleteRecipeModalOpen(true);
+              setRecipeToDelete(recipe);
             }}
           />
         ))}
@@ -47,7 +82,12 @@ const RecipeOverview = () => {
         isEditMode={isEditMode}
         recipeToEdit={recipeToEdit}
       />
-    </div>
+      <ConfirmDeleteDialog
+        open={isDeleteRecipeModalOpen}
+        handleClose={() => setIsDeleteRecipeModalOpen(false)}
+        recipeToDelete={recipeToDelete}
+      />
+    </Box>
   );
 };
 
