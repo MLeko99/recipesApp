@@ -10,7 +10,7 @@ const Footer = () => {
         textAlign: "center",
         padding: "10px 0",
         width: "100%",
-        position: "relative", // Keeps it inside the layout
+        position: "relative",
         bottom: 0,
       }}
     >

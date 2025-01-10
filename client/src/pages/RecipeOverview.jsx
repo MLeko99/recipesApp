@@ -38,7 +38,7 @@ const RecipeOverview = () => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "flex-start",
-        paddingBottom: "80px", // Space for footer
+        paddingBottom: "80px",
       }}
     >
       <Button

@@ -63,7 +63,7 @@ const RecipeCard = ({ recipe, setRecipeToEdit, onDelete }) => {
       <CardActions
         sx={{
           display: "flex",
-          justifyContent: "center", // Centers buttons horizontally
+          justifyContent: "center",
           gap: "10px",
         }}
       >

@@ -48,7 +48,7 @@ const CreateEditRecipe = ({ open, handleClose, recipeToEdit, isEditMode }) => {
   const handleIngredientChange = (value, index) => {
     setIngredients((prevIngredients) => {
       const updatedIngredients = [...prevIngredients];
-      updatedIngredients[index] = value; // Update only the specific ingredient
+      updatedIngredients[index] = value;
       return updatedIngredients;
     });
   };
@@ -87,13 +87,13 @@ const CreateEditRecipe = ({ open, handleClose, recipeToEdit, isEditMode }) => {
     };
 
     if (isEditMode) {
-      await dispatch(editRecipe(recipe)); // Save changes to the recipe
+      await dispatch(editRecipe(recipe));
     } else {
-      await dispatch(createRecipe(recipe)); // Add a new recipe
+      await dispatch(createRecipe(recipe));
     }
 
-    handleClose(); // Close the dialog only after successful save
-    resetForm(); // Reset the form after saving
+    handleClose();
+    resetForm();
   };
 
   return (
@@ -104,8 +104,8 @@ const CreateEditRecipe = ({ open, handleClose, recipeToEdit, isEditMode }) => {
       PaperProps={{
         component: "form",
         onSubmit: (e) => {
-          e.preventDefault(); // Prevent form from reloading the page
-          handleSave(); // Call save function on form submit
+          e.preventDefault();
+          handleSave();
         },
       }}
     >
@@ -115,21 +115,21 @@ const CreateEditRecipe = ({ open, handleClose, recipeToEdit, isEditMode }) => {
           label="Title"
           fullWidth
           value={title}
-          onChange={(e) => setTitle(e.target.value)} // Properly update state
+          onChange={(e) => setTitle(e.target.value)}
           margin="normal"
         />
         <TextField
           label="Description"
           fullWidth
           value={description}
-          onChange={(e) => setDescription(e.target.value)} // Properly update state
+          onChange={(e) => setDescription(e.target.value)}
           margin="normal"
         />
         <TextField
           label="Preparation Time (minutes)"
           fullWidth
           value={prepTime}
-          onChange={(e) => setPrepTime(e.target.value)} // Properly update state
+          onChange={(e) => setPrepTime(e.target.value)}
           margin="normal"
           type="number"
         />
@@ -140,7 +140,7 @@ const CreateEditRecipe = ({ open, handleClose, recipeToEdit, isEditMode }) => {
                 label={`Ingredient ${index + 1}`}
                 fullWidth
                 value={ingredient}
-                onChange={(e) => handleIngredientChange(e.target.value, index)} // Update specific ingredient
+                onChange={(e) => handleIngredientChange(e.target.value, index)}
               />
               <Button
                 onClick={() => handleRemoveIngredient(index)}
@@ -197,11 +197,7 @@ const CreateEditRecipe = ({ open, handleClose, recipeToEdit, isEditMode }) => {
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose}>Cancel</Button>
-        <Button
-          type="submit" // Submit the form
-          variant="contained"
-          color="primary"
-        >
+        <Button type="submit" variant="contained" color="primary">
           Save
         </Button>
       </DialogActions>

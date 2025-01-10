@@ -16,20 +16,18 @@ function App() {
           sx={{
             display: "flex",
             flexDirection: "column",
-            minHeight: "100vh", // Full height of viewport
+            minHeight: "100vh",
           }}
         >
-          {/* Header */}
           <Header />
 
-          {/* Main Content */}
           <Box
             sx={{
-              flex: 1, // Ensures main content fills remaining space
-              backgroundColor: "#f4f6f9", // Light blue-gray background
+              flex: 1,
+              backgroundColor: "#f4f6f9",
               padding: "20px",
               boxSizing: "border-box",
-              width: "100%", // Ensures full width
+              width: "100%",
             }}
           >
             <BrowserRouter>
@@ -47,8 +45,8 @@ function App() {
               color: "#ffffff",
               textAlign: "center",
               padding: "10px 0",
-              width: "100%", // Ensures full width
-              position: "relative", // Keeps footer inside the layout
+              width: "100%",
+              position: "relative",
             }}
           >
             <Footer />
