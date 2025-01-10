@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, DialogTitle } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import axiosInstance from "../axios-instance";
 import RecipeCard from "../components/RecipeCard";
 import CreateEditRecipe from "../components/CreateEditRecipe";
-import ConfirmDeleteDialog from "../components/ConfirmDeleteDialog";
-import { useDispatch, useSelector } from "react-redux";
-import { setRecipes } from "../redux/recipeSlice";
 import ConfirmDeleteDialog from "../components/ConfirmDeleteDialog";
 import { useDispatch, useSelector } from "react-redux";
 import { setRecipes } from "../redux/recipeSlice";
@@ -14,13 +11,8 @@ const RecipeOverview = () => {
   const [open, setOpen] = useState(false);
   const [isDeleteRecipeModalOpen, setIsDeleteRecipeModalOpen] = useState(false);
   const [recipeToDelete, setRecipeToDelete] = useState("");
-  const [isDeleteRecipeModalOpen, setIsDeleteRecipeModalOpen] = useState(false);
-  const [recipeToDelete, setRecipeToDelete] = useState("");
   const [recipeToEdit, setRecipeToEdit] = useState(null);
   const [isEditMode, setisEditMode] = useState(false);
-
-  const dispatch = useDispatch();
-  const recipes = useSelector((state) => state.recipes.recipes);
 
   const dispatch = useDispatch();
   const recipes = useSelector((state) => state.recipes.recipes);
@@ -29,13 +21,10 @@ const RecipeOverview = () => {
     const response = await axiosInstance.get("/");
     if (response.status === 200) {
       dispatch(setRecipes(response.data));
-      dispatch(setRecipes(response.data));
     }
   };
 
   useEffect(() => {
-    getRecipes();
-  }, []);
     getRecipes();
   }, []);
 
@@ -74,16 +63,11 @@ const RecipeOverview = () => {
         {recipes?.map((recipe) => (
           <RecipeCard
             key={recipe.id}
-            key={recipe.id}
             recipe={recipe}
             setRecipeToEdit={(recipe) => {
               setRecipeToEdit(recipe);
               setisEditMode(true);
               setOpen(true);
-            }}
-            onDelete={() => {
-              setIsDeleteRecipeModalOpen(true);
-              setRecipeToDelete(recipe);
             }}
             onDelete={() => {
               setIsDeleteRecipeModalOpen(true);
